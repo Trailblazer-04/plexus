@@ -1,3 +1,4 @@
+// components/MobileNav.tsx
 "use client";
 
 import React from "react";
@@ -15,8 +16,16 @@ import Link from "next/link";
 import { sidebarLinks } from "@/constants";
 import { usePathname } from "next/navigation";
 
+import {
+  useUser,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
+
 const MobileNav = () => {
   const pathname = usePathname();
+  const { isSignedIn } = useUser();
 
   return (
     <section className="sm:hidden">
@@ -35,22 +44,13 @@ const MobileNav = () => {
 
         <SheetContent
           side="left"
-          className="
-            w-65
-            border-none
-            bg-[#171717]
-            px-5 py-6
-            text-white
-          "
+          className="w-65 border-none bg-[#171717] px-5 py-6 text-white"
         >
           <SheetHeader className="sr-only">
             <SheetTitle>Mobile Navigation</SheetTitle>
           </SheetHeader>
 
-          <Link
-            href="/"
-            className="flex items-center gap-3"
-          >
+          <Link href="/" className="flex items-center gap-3">
             <Image
               src="/icons/logo.svg"
               width={38}
@@ -73,18 +73,9 @@ const MobileNav = () => {
                 <SheetClose asChild key={link.route}>
                   <Link
                     href={link.route}
-                    className={`
-                      flex items-center gap-4
-                      rounded-xl
-                      px-4 py-3
-                      transition-all duration-200
-                      hover:bg-[#252525]
-                      ${
-                        isActive
-                          ? "bg-blue-500 shadow-md"
-                          : ""
-                      }
-                    `}
+                    className={`flex items-center gap-4 rounded-xl px-4 py-3 transition-all duration-200 hover:bg-[#252525] ${
+                      isActive ? "bg-blue-500 shadow-md" : ""
+                    }`}
                   >
                     <Image
                       src={link.imgUrl}
@@ -101,6 +92,38 @@ const MobileNav = () => {
                 </SheetClose>
               );
             })}
+          </div>
+
+          <div className="mt-8 border-t border-[#252525] pt-5">
+            {isSignedIn ? (
+              <div className="flex items-center gap-3">
+                <UserButton />
+
+                <div>
+                  <p className="text-sm font-semibold">
+                    Account
+                  </p>
+
+                  <p className="text-xs text-gray-400">
+                    Manage profile
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                <SignInButton mode="modal">
+                  <button className="flex-1 rounded-xl border border-[#2f2f2f] px-4 py-3 text-sm font-medium text-white transition hover:bg-[#252525]">
+                    Sign in
+                  </button>
+                </SignInButton>
+
+                <SignUpButton mode="modal">
+                  <button className="flex-1 rounded-xl bg-blue-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-600">
+                    Sign up
+                  </button>
+                </SignUpButton>
+              </div>
+            )}
           </div>
         </SheetContent>
       </Sheet>
