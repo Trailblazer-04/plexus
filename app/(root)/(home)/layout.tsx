@@ -4,6 +4,15 @@ import { redirect } from "next/navigation";
 
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Plexus",
+  description: "Video calling app",
+  icons : {
+    icon : '/icons/logo.svg'
+  }
+};
 
 const HomeLayout = async ({
   children,

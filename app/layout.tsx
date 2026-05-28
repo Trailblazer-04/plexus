@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
+import '@stream-io/video-react-sdk/dist/css/styles.css';
 
 export const metadata: Metadata = {
-  title: "PLEXUS",
-  description: "PLEXUS Dashboard",
+  title: "Plexus",
+  description: "Video calling app",
+  icons : {
+    icon : '/icons/logo.svg'
+  }
 };
 
 export default function RootLayout({
@@ -29,7 +34,10 @@ export default function RootLayout({
         }}
       >
       <html lang="en">
-        <body>{children}</body>
+        <body>{children}
+          <Toaster/>
+        </body>
+
       </html>
     </ClerkProvider>
   );
