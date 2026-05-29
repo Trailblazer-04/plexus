@@ -1,64 +1,77 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from "react";
 import {
-  Call,
-  StreamCall,
+  ReactNode,
+  useEffect,
+  useState,
+} from "react";
+
+import {
   StreamVideo,
   StreamVideoClient,
 } from "@stream-io/video-react-sdk";
+
 import { useUser } from "@clerk/nextjs";
-import { tokenProvider } from "@/actions/stream.actions";
+
 import Loader from "@/components/Loader";
 
-const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
+const apiKey =
+  process.env.NEXT_PUBLIC_STREAM_API_KEY!;
 
-export const StreamVideoProvider = ({children} : {children : ReactNode}) => {
-  const [videoClient, setVideoClient] = useState<StreamVideoClient>();
-  const {user, isLoaded} = useUser();
+const StreamVideoProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
+  const { user, isLoaded } = useUser();
 
-  useEffect (() => {
-     if(!isLoaded || !user) return;
-     if(!apiKey) throw new Error('Stream API key missing')
-
-     const client = new StreamVideoClient({
-        apiKey,
-        user: {
-            id: user?.id,
-            name: user?.username || user?.id,
-            image: user?.imageUrl,
-        }, 
-        tokenProvider,
-     })
-
-     setVideoClient(client);
-
-  }, [user, isLoaded]);
-
-  if(!videoClient) return <Loader/>
-
-  return (
-    <StreamVideo client = {videoClient}>
-        {children}
-    </StreamVideo>
-  )
-};
-
-const MyCallUI = ({ client }: { client: StreamVideoClient }) => {
-  const [call, setCall] = useState<Call>();
+  const [videoClient, setVideoClient] =
+    useState<StreamVideoClient>();
 
   useEffect(() => {
-    const myCall = client.call("default", "my-first-call");
-    myCall.join({ create: true }).catch(console.error);
-    setCall(myCall);
+    if (!isLoaded || !user) return;
+
+    if (!apiKey) {
+      throw new Error(
+        "NEXT_PUBLIC_STREAM_API_KEY is missing"
+      );
+    }
+
+    const client = new StreamVideoClient({
+      apiKey,
+
+      user: {
+        id: user.id,
+        name: user.username || user.id,
+        image: user.imageUrl,
+      },
+
+      tokenProvider: async () => {
+        const response = await fetch(
+          "/api/stream-token"
+        );
+
+        const data = await response.json();
+
+        return data.token;
+      },
+    });
+
+    setVideoClient(client);
 
     return () => {
-      myCall.leave().catch(console.error);
-      setCall(undefined);
+      client.disconnectUser();
+      setVideoClient(undefined);
     };
-  }, [client]);
+  }, [user, isLoaded]);
 
-  if (!call) return null;
+  if (!videoClient) return <Loader />;
 
-  return <StreamCall call={call}>{/* <MyVideoUI /> */}</StreamCall>;
+  return (
+    <StreamVideo client={videoClient}>
+      {children}
+    </StreamVideo>
+  );
 };
+
+export default StreamVideoProvider;
