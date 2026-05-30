@@ -37,25 +37,33 @@ const MeetingModal = ({
 }: MeetingModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="flex w-full max-w-130 flex-col gap-6 border-none bg-[#171717]
-      px-6 py-9 text-white">
+      <DialogContent className="flex w-full max-w-130 flex-col gap-6 border-none bg-[#171717] px-6 py-9 text-white">
         <div className="flex flex-col gap-6">
-            {image && (
-                <div className="flex justify-center">
-                    <Image src={image} alt="image" width={72} height={72} />
-                </div>
+          {image && (
+            <div className="flex justify-center">
+              <Image src={image} alt="image" width={72} height={72} />
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <DialogHeader>
+              <DialogTitle className={`text-3xl font-bold leading-10.5 ${className}`}>{title}</DialogTitle>
+            </DialogHeader>
+          </div>
+
+          {children}
+
+          <Button
+            className="bg-blue-500 focus-visible:ring-0 focus-visible:ring-offset-0"
+            onClick={handleClick}
+          >
+            {buttonIcon && (
+              <Image src={buttonIcon} alt="button icon" width={13} height={13} />
             )}
-            <h1 className={`text-3xl font-bold leading-10.5 ${className}`}>{title}</h1>
-            {children}
-            <Button className="bg-blue-500 focus-visible:ring-0 focus-visible:ring-offset-0" 
-            onClick={handleClick}>
-                {buttonIcon && (
-                    <Image src={buttonIcon} alt="button icon" width={13} height={13}/>
-                )} &nbsp;
-                {buttonText || 'Schedule Meeting'}
-            </Button>
+            {buttonIcon ? <span className="ml-2" /> : null}
+            {buttonText || 'Schedule Meeting'}
+          </Button>
         </div>
-           
       </DialogContent>
     </Dialog>
   );

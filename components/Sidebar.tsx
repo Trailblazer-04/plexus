@@ -9,47 +9,76 @@ import { useUser, UserButton } from "@clerk/nextjs";
 
 const Sidebar = () => {
   const pathname = usePathname();
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
 
   return (
-    <section className="sticky left-0 top-0 flex h-screen w-65 flex-col justify-between bg-[#171717] px-4 py-6 pt-24 text-white max-sm:hidden">
-      <div className="flex flex-1 flex-col gap-4">
+    <aside className="fixed left-0 top-16 z-40 flex h-[calc(100vh-4rem)] w-[220px] flex-col border-r border-white/[0.05] bg-[#07070d] max-sm:hidden">
+
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2.5 py-4">
+        <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-white/20">
+          Navigation
+        </p>
+
         {sidebarLinks.map((link) => {
           const isActive =
-            pathname === link.route ||
-            pathname.startsWith(`${link.route}/`);
+            pathname === link.route || pathname.startsWith(`${link.route}/`);
 
           return (
             <Link
               href={link.route}
               key={link.label}
-              className={`flex items-center gap-4 rounded-xl px-4 py-3 transition-all duration-200 hover:bg-[#252525] ${
+              className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-150 ${
                 isActive
-                  ? "bg-blue-500 shadow-lg"
-                  : "bg-transparent"
+                  ? "bg-white/[0.08] text-white"
+                  : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"
               }`}
             >
-              <Image
-                src={link.imgURL}
-                alt={link.label}
-                width={24}
-                height={24}
-              />
+              {isActive && (
+                <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-blue-500" />
+              )}
 
-              <p>{link.label}</p>
+              <span
+                className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg transition-all duration-150 ${
+                  isActive
+                    ? "bg-blue-500/20"
+                    : "bg-white/[0.04] group-hover:bg-white/[0.07]"
+                }`}
+              >
+                <Image
+                  src={link.imgURL}
+                  alt=""
+                  width={14}
+                  height={14}
+                  className={`transition-opacity duration-150 ${
+                    isActive ? "opacity-100" : "opacity-40 group-hover:opacity-60"
+                  }`}
+                />
+              </span>
+
+              <span className="text-[13px] font-medium">{link.label}</span>
             </Link>
           );
         })}
-      </div>
+      </nav>
 
       {isSignedIn && (
-        <div className="border-t border-[#252525] pt-4">
-          <div className="flex items-center gap-3 px-2">
+        <div className="border-t border-white/[0.05] p-3">
+          <div className="flex items-center gap-2.5 rounded-xl p-2 transition-colors hover:bg-white/[0.04]">
             <UserButton />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-semibold text-white/80">
+                {user?.fullName ?? "Account"}
+              </p>
+              <p className="truncate text-[11px] text-white/30">
+                {user?.primaryEmailAddress?.emailAddress}
+              </p>
+            </div>
           </div>
         </div>
       )}
-    </section>
+    </aside>
   );
 };
 

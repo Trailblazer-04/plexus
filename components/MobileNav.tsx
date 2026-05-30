@@ -1,4 +1,3 @@
-// components/MobileNav.tsx
 "use client";
 
 import React from "react";
@@ -44,7 +43,7 @@ const MobileNav = () => {
 
         <SheetContent
           side="left"
-          className="w-65 border-none bg-[#171717] px-5 py-6 text-white"
+          className="w-[260px] border-none bg-[#171717] px-5 py-6 text-white"
         >
           <SheetHeader className="sr-only">
             <SheetTitle>Mobile Navigation</SheetTitle>
@@ -78,7 +77,7 @@ const MobileNav = () => {
                     }`}
                   >
                     <Image
-                      src={link.imgUrl}
+                      src={link.imgURL}
                       alt={link.label}
                       width={22}
                       height={22}

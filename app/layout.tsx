@@ -20,20 +20,26 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
-        appearance={{
-          layout: {
-            socialButtonsVariant: "iconButton",
-            logoImageUrl: "/icons/yoom-logo.svg",
+      appearance={{
+        baseTheme: "light",
+        layout: {
+          socialButtonsVariant: "iconButton",
+          logoImageUrl: "/icons/yoom-logo.svg",
+          card: {
+            borderRadius: "12px",
+            boxShadow: "0 6px 20px rgba(16,17,20,0.08)",
           },
-          variables: {
-            colorText: "#fff",
-            colorPrimary: "#0E78F9",
-            colorBackground: "#1C1F2E",
-            colorInputBackground: "#252A41",
-            colorInputText: "#fff",
-          },
-        }}
-      >
+        },
+        variables: {
+          colorText: "#101114",
+          colorPrimary: "#0E78F9",
+          colorBackground: "#ffffff",
+          colorInputBackground: "#ffffff",
+          colorInputText: "#101114",
+          colorButtonText: "#ffffff",
+        },
+      }}
+    >
       <html lang="en">
         <body>{children}
           <Toaster/>

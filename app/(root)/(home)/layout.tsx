@@ -9,43 +9,24 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Plexus",
   description: "Video calling app",
-  icons : {
-    icon : '/icons/logo.svg'
-  }
+  icons: { icon: "/icons/logo.svg" },
 };
 
-const HomeLayout = async ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
+const HomeLayout = async ({ children }: { children: ReactNode }) => {
   const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in");
-  }
+  if (!userId) redirect("/sign-in");
 
   return (
-    <main className="relative min-h-screen bg-[#1C1C1C]">
+    <div className="min-h-screen bg-[#07070d]">
       <Navbar />
+      <Sidebar />
 
-      <div className="flex">
-        <Sidebar />
-
-        <section
-          className="
-            flex min-h-screen flex-1 flex-col
-            bg-[#1C1C1C]
-            px-6 pb-6 pt-28
-            max-md:pb-14 sm:pb-14
-          "
-        >
-          <div className="w-full">
-            {children}
-          </div>
-        </section>
-      </div>
-    </main>
+      <main className="min-h-screen pl-0 pt-16 sm:pl-[220px]">
+        <div className="px-6 py-8 md:px-10">
+          {children}
+        </div>
+      </main>
+    </div>
   );
 };
 

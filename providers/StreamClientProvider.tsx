@@ -47,11 +47,20 @@ const StreamVideoProvider = ({
       },
 
       tokenProvider: async () => {
-        const response = await fetch(
-          "/api/stream-token"
-        );
+        const response = await fetch("/api/stream-token", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to fetch Stream token: ${response.status} ${errorText}`);
+        }
 
         const data = await response.json();
+
+        if (!data.token) {
+          throw new Error("Stream token not returned from server");
+        }
 
         return data.token;
       },
@@ -64,6 +73,10 @@ const StreamVideoProvider = ({
       setVideoClient(undefined);
     };
   }, [user, isLoaded]);
+
+  if (!isLoaded) return <Loader />;
+
+  if (!user) return <>{children}</>;
 
   if (!videoClient) return <Loader />;
 
