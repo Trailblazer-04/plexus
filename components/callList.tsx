@@ -8,11 +8,24 @@ import MeetingCard from "./MeetingCard";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+const recordingCache = new Map<string, Promise<CallRecording[]>>();
+
+async function recordingsFor(meeting: Call): Promise<CallRecording[]> {
+  const key = `${meeting.type}:${meeting.id}`;
+  let request = recordingCache.get(key);
+  if (!request) {
+    request = meeting.listRecordings().then((result) => result.recordings).catch(() => []);
+    recordingCache.set(key, request);
+  }
+  return request;
+}
+
 const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
   const router = useRouter();
   const { endedCalls, upcomingCalls, callRecordings, isLoading } =
     useGetCalls();
   const [recordings, setRecordings] = useState<CallRecording[]>([]);
+  const [isLoadingRecordings, setIsLoadingRecordings] = useState(false);
 
   const getCalls = () => {
     switch (type) {
@@ -41,24 +54,27 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
   };
 
   useEffect(() => {
+    let cancelled = false;
     const fetchRecordings = async () => {
-      const callData = await Promise.all(
-        callRecordings?.map((meeting) => meeting.listRecordings()) ?? [],
-      );
-
-      const recordings = callData
-        .filter((call) => call.recordings.length > 0)
-        .flatMap((call) => call.recordings);
-
-      setRecordings(recordings);
+      setIsLoadingRecordings(true);
+      const results: CallRecording[] = [];
+      // Recording lookup is a per-call endpoint; serialize and cap requests to avoid Stream 429s.
+      for (const meeting of [...endedCalls].slice(0, 8)) {
+        const items = await recordingsFor(meeting);
+        results.push(...items);
+        if (cancelled) return;
+      }
+      if (!cancelled) setRecordings(results);
+      if (!cancelled) setIsLoadingRecordings(false);
     };
 
     if (type === "recordings") {
-      fetchRecordings();
+      void fetchRecordings();
     }
-  }, [type, callRecordings]);
+    return () => { cancelled = true; };
+  }, [type, endedCalls]);
 
-  if (isLoading) return <Loader />;
+  if (isLoading || (type === "recordings" && isLoadingRecordings)) return <Loader />;
 
   const calls = getCalls();
   const noCallsMessage = getNoCallsMessage();
@@ -91,6 +107,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
                 ? (meeting as CallRecording).url
                 : `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${(meeting as Call).id}`
             }
+            insightLink={type === "ended" ? `/meeting/${(meeting as Call).id}?insights=true` : undefined}
             buttonIcon1={type === "recordings" ? "/icons/play.svg" : undefined}
             buttonText={type === "recordings" ? "Play" : "Start"}
             handleClick={

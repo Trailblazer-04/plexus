@@ -16,6 +16,7 @@ interface MeetingCardProps {
   buttonText?: string;
   handleClick: () => void;
   link: string;
+  insightLink?: string;
 }
 
 const MeetingCard = ({
@@ -27,6 +28,7 @@ const MeetingCard = ({
   handleClick,
   link,
   buttonText,
+  insightLink,
 }: MeetingCardProps) => {
   return (
     <section className="flex min-h-64.5 w-full flex-col justify-between rounded-[14px] bg-dark-1 px-5 py-8 xl:max-w-142">
@@ -62,6 +64,11 @@ const MeetingCard = ({
           </div>
         </div>
 
+        {isPreviousMeeting && insightLink && (
+          <Button onClick={() => window.location.assign(insightLink)} className="rounded bg-violet-500/20 px-5 text-violet-100 hover:bg-violet-500/30">
+            Meeting intelligence
+          </Button>
+        )}
         {!isPreviousMeeting && (
           <div className="flex gap-2">
             <Button

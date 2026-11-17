@@ -7,7 +7,7 @@ import 'react-datepicker/dist/react-datepicker.css'
 
 export const metadata: Metadata = {
   title: "Plexus",
-  description: "Video calling app",
+  description: "Meet, collaborate, and turn conversations into clear next steps with Plexus AI.",
   icons : {
     icon : '/icons/logo.svg'
   }

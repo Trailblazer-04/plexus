@@ -6,6 +6,8 @@ import {
   PaginatedGridLayout,
   SpeakerLayout,
   useCallStateHooks,
+  useCall,
+  RecordCallButton,
 } from "@stream-io/video-react-sdk";
 import {
   DropdownMenu,
@@ -21,19 +23,17 @@ import React, { useState } from "react";
 import { LayoutList, Users } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import EndCallButton from "./EndCallButton";
-import Loader from "./Loader";
 
 type CallLayoutType = "grid" | "speaker-left" | "speaker-right";
 
 const MeetingRoom = () => {
+  const call = useCall();
   const searchParams = useSearchParams();
   const isPersonalRoom = !!searchParams.get('personal')
   const [layout, setLayout] = useState<CallLayoutType>("speaker-left");
   const [showParticipants, setShowParticipants] = useState(false);
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
-
-  if(callingState !== CallingState.JOINED) return <Loader/> 
 
   const CallLayout = () => {
     switch (layout) {
@@ -49,23 +49,18 @@ const MeetingRoom = () => {
   };
 
   return (
-    <section className="relative h-screen w-full overflow-hidden pt-4 text-white">
-      <div className="relative flex size-full items-center justify-center">
+    <section className="relative flex h-screen w-full overflow-hidden bg-[#080b12] pt-4 text-white">
+      {callingState !== CallingState.JOINED && <div className="absolute left-1/2 top-5 z-50 -translate-x-1/2 rounded-full border border-amber-300/20 bg-amber-400/10 px-4 py-2 text-xs text-amber-100 shadow-lg">{callingState === CallingState.RECONNECTING || callingState === CallingState.MIGRATING ? "Reconnecting to your meeting…" : callingState === CallingState.RECONNECTING_FAILED ? "Connection lost. Check your network and rejoin." : "Meeting connection updating…"}</div>}
+      <div className="relative flex min-w-0 flex-1 items-center justify-center px-3 pb-24">
         <div className="flex size-full max-w-250 items-center">
           <CallLayout />
         </div>
 
-        <div
-          className={`h-[calc(100vh-86px)] ml-2 ${
-            showParticipants ? "block" : "hidden"
-          }`}
-        >
-          <CallParticipantsList onClose={() => setShowParticipants(false)} />
-        </div>
       </div>
 
-      <div className="fixed bottom-0 flex w-full items-center justify-center gap-5 flex-wrap">
+      <div className="fixed bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-white/10 bg-[#111722]/95 px-3 py-2 shadow-2xl shadow-black/40 backdrop-blur-xl sm:gap-3 sm:px-4">
         <CallControls />
+        <RecordCallButton />
         <DropdownMenu>
           <div className="flex items-center">
             <DropdownMenuTrigger className="cursor-pointer rounded-2xl bg-[#19232D] px-4 py-2 
@@ -87,7 +82,7 @@ const MeetingRoom = () => {
           </DropdownMenuContent>
         </DropdownMenu>
         <CallStatsButton/>
-        <button onClick={() => setShowParticipants((prev) => !prev)}>
+        <button aria-label="Toggle participants" onClick={() => setShowParticipants((prev) => !prev)}>
             <div className="cursor-pointer rounded-2xl bg-[#19232D] px-4 py-2 
             hover:bg-[#4C535B]">
                 <Users size={20} className="text-white"/>
@@ -95,6 +90,7 @@ const MeetingRoom = () => {
         </button>
         {!isPersonalRoom && <EndCallButton />}
       </div>
+      {showParticipants && <div className="absolute right-4 top-5 z-30 h-[calc(100%-112px)] w-72 rounded-2xl border border-white/10 bg-[#10151f] p-2 shadow-2xl md:right-[380px]"><CallParticipantsList onClose={() => setShowParticipants(false)}/></div>}
     </section>
   );
 };

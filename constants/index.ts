@@ -21,6 +21,11 @@ export const sidebarLinks = [
     label: 'Recordings',
   },
   {
+    imgURL: '/icons/recordings.svg',
+    route: '/insights',
+    label: 'Meeting AI',
+  },
+  {
     imgURL: '/icons/add-personal.svg',
     route: '/personal-room',
     label: 'Personal Room',

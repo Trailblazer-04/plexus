@@ -12,7 +12,7 @@ const Home = async () => {
   const date = new Intl.DateTimeFormat('en-US', {
     dateStyle: 'full',
   }).format(now);
-
+  
   return (
     <section className="flex size-full flex-col gap-10 text-white">
       <div className="relative h-[240px] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[#0f1629] via-[#111827] to-[#0a0a1a]">

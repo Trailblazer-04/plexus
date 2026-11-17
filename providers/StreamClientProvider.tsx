@@ -37,7 +37,7 @@ const StreamVideoProvider = ({
       );
     }
 
-    const client = new StreamVideoClient({
+    const client = StreamVideoClient.getOrCreateInstance({
       apiKey,
 
       user: {
@@ -68,10 +68,9 @@ const StreamVideoProvider = ({
 
     setVideoClient(client);
 
-    return () => {
-      client.disconnectUser();
-      setVideoClient(undefined);
-    };
+    // Keep the user-scoped SDK singleton alive across React Strict Mode effect
+    // replay and route transitions. Disconnecting here races the next mount,
+    // causing a second client and a dropped call connection.
   }, [user, isLoaded]);
 
   if (!isLoaded) return <Loader />;

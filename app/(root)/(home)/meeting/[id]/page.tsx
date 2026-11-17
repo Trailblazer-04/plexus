@@ -13,6 +13,8 @@ import MeetingRoom from "@/components/MeetingRoom";
 import Loader from "@/components/Loader";
 
 import { useGetCallById } from "@/hooks/useGetCallById";
+import { useSearchParams } from "next/navigation";
+import MeetingInsights from "@/components/MeetingInsights";
 
 const Meeting = ({
   params,
@@ -20,6 +22,7 @@ const Meeting = ({
   params: Promise<{ id: string }>;
 }) => {
   const { id } = use(params);
+  const searchParams = useSearchParams();
 
   const { isLoaded } = useUser();
 
@@ -27,6 +30,10 @@ const Meeting = ({
     useState(false);
 
   const { call, isCallLoading } = useGetCallById(id);
+
+  if (searchParams.get("insights") === "true") {
+    return <main className="min-h-screen bg-[#080b12] p-4 text-white md:p-8"><div className="mx-auto h-[calc(100vh-4rem)] max-w-5xl overflow-hidden rounded-2xl border border-white/10"><MeetingInsights meetingId={id}/></div></main>;
+  }
 
   if (!isLoaded || isCallLoading || !call) {
     return <Loader />;
