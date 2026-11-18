@@ -7,6 +7,8 @@ const isPublicRoute = createRouteMatcher([
   "/recordings",
   "/personal-room",
   "/meeting(.*)",
+  // Meeting API handlers perform their own Clerk auth and return JSON errors.
+  "/api/meetings(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
 ]);

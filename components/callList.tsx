@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const recordingCache = new Map<string, Promise<CallRecording[]>>();
+type MeetingRecording = CallRecording & { meetingId: string };
 
 async function recordingsFor(meeting: Call): Promise<CallRecording[]> {
   const key = `${meeting.type}:${meeting.id}`;
@@ -24,7 +25,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
   const router = useRouter();
   const { endedCalls, upcomingCalls, callRecordings, isLoading } =
     useGetCalls();
-  const [recordings, setRecordings] = useState<CallRecording[]>([]);
+  const [recordings, setRecordings] = useState<MeetingRecording[]>([]);
   const [isLoadingRecordings, setIsLoadingRecordings] = useState(false);
 
   const getCalls = () => {
@@ -57,11 +58,11 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
     let cancelled = false;
     const fetchRecordings = async () => {
       setIsLoadingRecordings(true);
-      const results: CallRecording[] = [];
+      const results: MeetingRecording[] = [];
       // Recording lookup is a per-call endpoint; serialize and cap requests to avoid Stream 429s.
       for (const meeting of [...endedCalls].slice(0, 8)) {
         const items = await recordingsFor(meeting);
-        results.push(...items);
+        results.push(...items.map((recording) => ({ ...recording, meetingId: meeting.id })));
         if (cancelled) return;
       }
       if (!cancelled) setRecordings(results);
@@ -107,7 +108,7 @@ const CallList = ({ type }: { type: "ended" | "upcoming" | "recordings" }) => {
                 ? (meeting as CallRecording).url
                 : `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${(meeting as Call).id}`
             }
-            insightLink={type === "ended" ? `/meeting/${(meeting as Call).id}?insights=true` : undefined}
+            insightLink={type === "recordings" ? `/meeting/${(meeting as MeetingRecording).meetingId}?insights=true&recording=${encodeURIComponent((meeting as CallRecording).url)}` : type === "ended" ? `/meeting/${(meeting as Call).id}?insights=true` : undefined}
             buttonIcon1={type === "recordings" ? "/icons/play.svg" : undefined}
             buttonText={type === "recordings" ? "Play" : "Start"}
             handleClick={

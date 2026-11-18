@@ -6,11 +6,12 @@ import { toast } from "sonner";
 
 type Insight = { summary: string; keyPoints: string[]; actionItems: { task: string; owner: string | null; dueDate: string | null }[]; transcript: string; language: string };
 
-export default function MeetingInsights({ meetingId }: { meetingId: string }) {
+export default function MeetingInsights({ meetingId, recordingUrl }: { meetingId: string; recordingUrl?: string | null }) {
   const [transcript, setTranscript] = useState("");
   const [language, setLanguage] = useState("auto");
   const [insight, setInsight] = useState<Insight | null>(null);
   const [loading, setLoading] = useState(false);
+  const [transcriptionError, setTranscriptionError] = useState("");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [asking, setAsking] = useState(false);
@@ -21,16 +22,37 @@ export default function MeetingInsights({ meetingId }: { meetingId: string }) {
     }).catch(() => undefined);
   }, [meetingId]);
 
+  useEffect(() => {
+    if (!recordingUrl) return;
+    let cancelled = false;
+    setLoading(true);
+    setTranscriptionError("");
+    fetch(`/api/meetings/${encodeURIComponent(meetingId)}/transcribe`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recordingUrl, language }),
+    }).then(async (response) => {
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Recording transcription failed");
+      if (!cancelled) { setTranscript(data.text); setLanguage(data.language || language); toast.success("Recording transcribed"); }
+    }).catch((error) => { if (!cancelled) setTranscriptionError(error instanceof Error ? error.message : "Recording transcription failed"); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  // language is intentionally captured at launch so selecting a language doesn't re-download a recording.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meetingId, recordingUrl]);
+
   const transcribe = async (file?: File) => {
     if (!file) return;
     setLoading(true);
+    setTranscriptionError("");
     try {
       const form = new FormData(); form.append("file", file); form.append("language", language);
       const response = await fetch(`/api/meetings/${encodeURIComponent(meetingId)}/transcribe`, { method: "POST", body: form });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Transcription failed");
       setTranscript(data.text); setLanguage(data.language || language); toast.success("Transcript ready");
-    } catch (error) { toast.error(error instanceof Error ? error.message : "Transcription failed"); }
+    } catch (error) { setTranscriptionError(error instanceof Error ? error.message : "Transcription failed"); }
     finally { setLoading(false); }
   };
 
@@ -56,8 +78,9 @@ export default function MeetingInsights({ meetingId }: { meetingId: string }) {
   };
 
   return <aside className="flex h-full min-h-0 flex-col border-l border-white/[0.07] bg-[#0c1019] text-white">
-    <div className="flex items-center gap-3 border-b border-white/[0.07] px-5 py-4"><div className="grid size-9 place-items-center rounded-xl bg-violet-500/15 text-violet-300"><Sparkles size={17}/></div><div><h2 className="text-sm font-semibold">Meeting intelligence</h2><p className="text-xs text-white/40">Transcript, notes & AI</p></div></div>
+    <div className="flex items-center gap-3 border-b border-white/[0.07] px-5 py-4"><div className="grid size-9 place-items-center rounded-xl bg-violet-500/15 text-violet-300"><Sparkles size={17}/></div><div><h2 className="text-sm font-semibold">Meeting intelligence</h2><p className="text-xs text-white/40">{recordingUrl ? "Transcribing saved recording…" : "Transcript, notes & AI"}</p></div></div>
     <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5">
+      {transcriptionError && <div role="alert" className="rounded-xl border border-red-400/25 bg-red-400/10 p-3 text-xs leading-5 text-red-100"><p className="font-semibold">Transcription failed</p><p className="mt-1 break-words">{transcriptionError}</p></div>}
       <section className="space-y-3"><div className="flex items-center justify-between"><h3 className="text-xs font-semibold uppercase tracking-wider text-white/50">Transcript</h3><select value={language} onChange={(e) => setLanguage(e.target.value)} className="rounded-lg border border-white/10 bg-[#141a25] px-2 py-1.5 text-xs text-white/80" aria-label="Transcription language"><option value="auto">Auto detect</option><option value="en">English</option><option value="hi">Hindi</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="pt">Portuguese</option><option value="ja">Japanese</option><option value="zh">Chinese</option></select></div>
         <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.025] px-4 py-3 text-xs text-white/65 transition hover:border-violet-400/50 hover:bg-violet-400/[0.05]"><FileAudio size={15}/>{loading ? "Working…" : "Upload audio to transcribe"}<input type="file" accept="audio/*,.mp3,.wav,.webm,.m4a,.ogg" className="sr-only" onChange={(e) => void transcribe(e.target.files?.[0])}/></label>
         <textarea value={transcript} onChange={(e) => setTranscript(e.target.value)} placeholder="Paste a transcript here, or upload an audio recording…" className="min-h-28 w-full resize-y rounded-xl border border-white/[0.08] bg-white/[0.03] p-3 text-xs leading-5 text-white/80 outline-none placeholder:text-white/25 focus:border-violet-400/40" />

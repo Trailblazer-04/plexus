@@ -64,9 +64,9 @@ const MeetingCard = ({
           </div>
         </div>
 
-        {isPreviousMeeting && insightLink && (
+        {insightLink && (
           <Button onClick={() => window.location.assign(insightLink)} className="rounded bg-violet-500/20 px-5 text-violet-100 hover:bg-violet-500/30">
-            Meeting intelligence
+            {isPreviousMeeting ? "Meeting intelligence" : "Transcribe & summarize"}
           </Button>
         )}
         {!isPreviousMeeting && (

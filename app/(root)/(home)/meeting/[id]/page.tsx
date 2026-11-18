@@ -32,7 +32,7 @@ const Meeting = ({
   const { call, isCallLoading } = useGetCallById(id);
 
   if (searchParams.get("insights") === "true") {
-    return <main className="min-h-screen bg-[#080b12] p-4 text-white md:p-8"><div className="mx-auto h-[calc(100vh-4rem)] max-w-5xl overflow-hidden rounded-2xl border border-white/10"><MeetingInsights meetingId={id}/></div></main>;
+    return <main className="min-h-screen bg-[#080b12] p-4 text-white md:p-8"><div className="mx-auto h-[calc(100vh-4rem)] max-w-5xl overflow-hidden rounded-2xl border border-white/10"><MeetingInsights meetingId={id} recordingUrl={searchParams.get("recording")}/></div></main>;
   }
 
   if (!isLoaded || isCallLoading || !call) {
